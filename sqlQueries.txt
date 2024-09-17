@@ -1,0 +1,81 @@
+# mess = client.messages.create(
+#     messaging_service_sid="MGa9c4d416d0fc65970e352e0832df1178",
+#     body="Helo",
+#     from_="+13613444759",
+#     to="+917834937049",
+#     send_at=utc_dt,
+#     schedule_type="fixed"
+# )
+
+Vehicle Charges June 2023
+
+
+TRUNCATE user_info;
+TRUNCATE user_med_freq;
+TRUNCATE timeslot_user;
+TRUNCATE user_id_access_key_map;
+
+SELECT * FROM user_info;
+SELECT * FROM user_med_freq;
+SELECT * FROM timeslot_user;
+SELECT * FROM user_id_access_key_map;
+
+
+
+
+
+
+
+--				LIST_MED_FUNCTION
+WITH RECURSIVE cte_temp AS (
+SELECT user_id, Med, start_date::date, end_date::date, frequency FROM user_med_freq
+UNION ALL
+SELECT user_id, Med, (start_date + INTERVAL '1' DAY)::date, end_date, frequency
+FROM cte_temp
+WHERE (start_date + INTERVAL '1' DAY)::date <= end_date), 
+tabcte AS (
+SELECT user_id, Med, TO_CHAR(start_date, 'DD-MM-YY') AS remainder_date 
+FROM cte_temp
+CROSS JOIN (
+SELECT generate_series(1, 3) AS n
+) AS counter
+WHERE counter.n <= cte_temp.frequency
+ORDER BY user_id, start_date)
+SELECT * FROM tabcte
+--				LIST_MED_FUNCTION
+
+
+
+
+WITH RECURSIVE cte_temp AS (
+SELECT user_id, Med, start_date::date, end_date::date, frequency FROM user_med_freq
+UNION ALL
+SELECT user_id, Med, (start_date + INTERVAL '1' DAY)::date, end_date, frequency
+FROM cte_temp
+WHERE (start_date + INTERVAL '1' DAY)::date <= end_date), 
+tabcte AS (
+SELECT user_id, Med, TO_CHAR(start_date, 'DD-MM-YY') AS remainder_date 
+FROM cte_temp
+CROSS JOIN (
+SELECT generate_series(1, 3) AS n
+) AS counter
+WHERE counter.n <= cte_temp.frequency
+ORDER BY user_id, start_date)
+SELECT t.user_id, t.remainder_date, tu.time_remainders FROM tabcte t
+JOIN timeslot_user tu
+ON t.user_id = tu.user_id
+
+--------------------------
+
+SELECT * FROM user_info;
+SELECT * FROM user_med_freq;
+SELECT * FROM timeslot_user;
+SELECT * FROM user_id_access_key_map;
+
+
+
+TRUNCATE user_info;
+TRUNCATE user_med_freq;
+TRUNCATE timeslot_user;
+TRUNCATE user_id_access_key_map;
+ 
